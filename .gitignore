@@ -1,3 +1,7 @@
 .venv/
 out/
 uv.lock
+src/code_to_doc/__pycache__/__init__.cpython-312.pyc
+.gitignore
+src/code_to_doc/__pycache__/cli.cpython-312.pyc
+src/code_to_doc/__pycache__/

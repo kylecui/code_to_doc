@@ -332,6 +332,7 @@ def print_stats(stats: Counter[str], output_file: Path) -> None:
     print(f"Output: {output_file}")
     print(f"Scanned files: {stats.get('files_scanned', 0)}")
     print(f"Exported source files: {stats.get('exported', 0)}")
+    print(f"Exported source lines: {stats.get('exported_lines', 0)}")
 
     skipped_total = stats.get("files_scanned", 0) - stats.get("exported", 0)
     print(f"Skipped files: {skipped_total}")
@@ -352,8 +353,13 @@ def print_stats(stats: Counter[str], output_file: Path) -> None:
             print(f"  - {reason}: {count}")
 
 
-def render_markdown(root: Path, files: list[Path]) -> str:
+def count_exported_lines(content: str) -> int:
+    return len(content.splitlines())
+
+
+def render_markdown(root: Path, files: list[Path]) -> tuple[str, int]:
     blocks: list[str] = []
+    exported_lines = 0
 
     for file_path in files:
         rel = file_path.relative_to(root).as_posix()
@@ -363,13 +369,16 @@ def render_markdown(root: Path, files: list[Path]) -> str:
         except UnicodeDecodeError:
             content = file_path.read_text(encoding="utf-8", errors="replace")
 
+        exported_lines += count_exported_lines(content)
+
         if content and not content.endswith("\n"):
             content += "\n"
 
         block = f"<{rel}>\n```{lang}\n{content}```"
         blocks.append(block)
 
-    return "\n\n".join(blocks) + ("\n" if blocks else "")
+    markdown = "\n\n".join(blocks) + ("\n" if blocks else "")
+    return markdown, exported_lines
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -449,7 +458,8 @@ def main() -> None:
         max_file_size=max_file_size,
         follow_symlinks=args.follow_symlinks,
     )
-    markdown = render_markdown(source_dir, files)
+    markdown, exported_lines = render_markdown(source_dir, files)
+    stats["exported_lines"] = exported_lines
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(markdown, encoding="utf-8")

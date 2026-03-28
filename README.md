@@ -55,5 +55,6 @@ uv run code-to-doc . out/source_dump.md --max-file-size 500KB
 
 - Scanned files: 扫描到的文件总数
 - Exported source files: 最终导出的源码文件数
+- Exported source lines: 导出的源码总行数
 - Skipped files: 总跳过文件数
 - 以及按原因分组的跳过计数（如 ignore 规则、扩展名过滤、过大文件、二进制文件等）
